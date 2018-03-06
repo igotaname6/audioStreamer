@@ -2,10 +2,13 @@ package com.codecool.audioStream;
 
 import org.springframework.stereotype.Service;
 
+import javax.sound.sampled.AudioFormat;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.LinkedList;
+import java.util.Queue;
 
 @Service
 public class UdpClient {
@@ -34,12 +37,19 @@ public class UdpClient {
     }
 
     public static void main(String[] args) throws IOException {
-        int bytesCount = 256;
+        int bytesCount = 44100;
         UdpClient udpClient = new UdpClient(bytesCount);
+
+        Queue<byte[]> queue = new LinkedList<>();
+
+        new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false)).run();
+
         while (true){
-            byte[] data = udpClient.readBytes();
-            System.out.println(data[0]);
+            queue.add(udpClient.readBytes());
+//            System.out.println(udpClient.readBytes().length);
         }
+
+
     }
 
 }
