@@ -1,5 +1,7 @@
 package com.codecool.audioStream;
 
+import org.springframework.stereotype.Controller;
+
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,16 +9,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 
+@Controller
 public class UdpServer {
-
     private final String GROUP_IP = "192.168.1.6";
+
     private final int PORT = 4446;
     private final DatagramSocket socket;
-
     private InputStream in;
 
     public UdpServer(InputStream file) throws IOException {
         this.in = file;
+        this.socket = new DatagramSocket(4445);
+    }
+
+    public UdpServer() throws IOException {
         this.socket = new DatagramSocket(4445);
     }
 
@@ -43,6 +49,10 @@ public class UdpServer {
             }
         }
         socket.close();
+    }
+
+    public void setIn(InputStream in) {
+        this.in = in;
     }
 
     public static void main(String[] args) throws IOException, LineUnavailableException {
