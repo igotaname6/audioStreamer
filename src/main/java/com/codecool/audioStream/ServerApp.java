@@ -5,7 +5,7 @@ import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-public class StreamerApp {
+public class ServerApp {
 
     public void start() {
 
