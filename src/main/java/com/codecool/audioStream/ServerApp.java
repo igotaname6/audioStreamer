@@ -14,10 +14,11 @@ public class ServerApp {
 
     public static void main(String[] args) {
 
-        ConfigurableApplicationContext context = new AnnotationConfigApplicationContext("com.codecool.audioStream");
-        UdpServer udpServer = (UdpServer) context.getBean("UdpServer");
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("com.codecool.audioStream");
+        context.scan("com.codecool.audioStream");
+        UdpServer udpServer = context.getBean(UdpServer.class);
         try {
-            InputStream in = new FileInputStream("/resources/sample.wav");
+            InputStream in = new FileInputStream("resources/sample.wav");
             udpServer.setIn(in);
             udpServer.start();
         } catch (FileNotFoundException e) {
