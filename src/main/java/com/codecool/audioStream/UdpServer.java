@@ -35,7 +35,7 @@ public class UdpServer {
         while(in.read(buffer, 0, 44100) != -1) {
 
             try {
-//                sp.write(buffer.clone(), 0, 44100);
+                sp.write(buffer.clone(), 0, 44100);
                 InetAddress groupAddress = InetAddress.getByName(GROUP_IP);
 //                byte[] data = converter.getNextBytes();
 //                System.out.println(buffer.clone());
@@ -44,11 +44,11 @@ public class UdpServer {
                 System.out.println(counter + ", suma: " + sum);
                 DatagramPacket packet = new DatagramPacket(buffer.clone(),  buffer.length, groupAddress, PORT);
                 socket.send(packet);
-                Thread.sleep(200);
+//                Thread.sleep(200);
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
             }
         }
         socket.close();
