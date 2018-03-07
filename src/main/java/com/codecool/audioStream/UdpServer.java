@@ -33,10 +33,12 @@ public class UdpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        String path = "resources/sample.wav";
-        int bytesCount = 44100;
-        WaveConverter waveConverter = new WaveConverter(path, bytesCount);
-        UdpServer udpServer = new UdpServer(waveConverter);
-        udpServer.start();
+        while (true) {
+            String path = "resources/sample.wav";
+            int bytesCount = 44100;
+            WaveConverter waveConverter = new WaveConverter(path, bytesCount);
+            UdpServer udpServer = new UdpServer(waveConverter);
+            udpServer.start();
+        }
     }
 }

@@ -9,6 +9,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 public class UdpClient {
@@ -40,13 +43,19 @@ public class UdpClient {
         int bytesCount = 44100;
         UdpClient udpClient = new UdpClient(bytesCount);
 
-        Queue<byte[]> queue = new LinkedList<>();
+        BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>() {
+        };
 
-        new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false)).run();
+        new Thread(new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false))).start();
 
-        while (true){
-            queue.add(udpClient.readBytes());
-//            System.out.println(udpClient.readBytes().length);
+        while (true) {
+            byte[] buff = udpClient.readBytes();
+            try {
+                queue.put(buff);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+//            System.out.println(buff.length + " > " + buff[0]);
         }
 
 
