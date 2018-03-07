@@ -42,11 +42,16 @@ public class UdpClient {
 
         Queue<byte[]> queue = new LinkedList<>();
 
-        new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false)).run();
+        Runnable playerT = new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false));
+
+        Thread thread = new Thread(playerT);
+        thread.start();
 
         while (true){
-            queue.add(udpClient.readBytes());
-//            System.out.println(udpClient.readBytes().length);
+            byte[] arr = udpClient.readBytes();
+            queue.add(arr);
+            System.out.println(arr[0]);
+//           System.out.println(udpClient.readBytes().length);
         }
 
 
