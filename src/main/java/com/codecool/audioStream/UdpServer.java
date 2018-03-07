@@ -25,7 +25,10 @@ public class UdpServer {
                 System.out.println(data);
                 DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, PORT);
                 socket.send(packet);
+                Thread.sleep(250);
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -34,7 +37,7 @@ public class UdpServer {
 
     public static void main(String[] args) throws IOException {
         while(true) {
-            String path = "resources/sample.wav";
+            String path = "resources/MsJackson.wav";
             int bytesCount = 44100;
             WaveConverter waveConverter = new WaveConverter(path, bytesCount);
             UdpServer udpServer = new UdpServer(waveConverter);

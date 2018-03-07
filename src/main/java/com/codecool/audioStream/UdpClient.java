@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 public class UdpClient {
@@ -40,18 +40,18 @@ public class UdpClient {
         int bytesCount = 44100;
         UdpClient udpClient = new UdpClient(bytesCount);
 
-        Queue<byte[]> queue = new LinkedList<>();
+        BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
 
-        Runnable playerT = new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false));
+        new Thread(new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false))).start();
 
-        Thread thread = new Thread(playerT);
-        thread.start();
-
-        while (true){
-            byte[] arr = udpClient.readBytes();
-            queue.add(arr);
-            System.out.println(arr[0]);
-//           System.out.println(udpClient.readBytes().length);
+        while (true) {
+            byte[] buff = udpClient.readBytes();
+            try {
+                queue.put(buff);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+//            System.out.println(buff.length + " > " + buff[0]);
         }
 
 
