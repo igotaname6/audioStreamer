@@ -1,15 +1,22 @@
 package com.codecool.audioStreamClientUtils;
 
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.util.concurrent.BlockingQueue;
 
+@Service
 public class Player implements Runnable {
 
     AudioFormat format;
     BlockingQueue<byte[]> input;
+
+    public Player() {
+    }
 
     public AudioFormat getFormat() {
         return format;
