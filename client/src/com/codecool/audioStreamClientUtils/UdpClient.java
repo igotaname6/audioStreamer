@@ -10,23 +10,29 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
-public class UdpClient {
+public class UdpClient implements Runnable {
 
     private final String GROUP_IP = "230.0.0.1";
-    private final int PORT = 4446;
+    private final int PORT = 4447;
     private final MulticastSocket socket;
     private boolean Finished;
     private final int bytesCount;
+    private BlockingQueue<byte[]> queue;
 
 
     public UdpClient() throws IOException {
         this.bytesCount = 44100;
         socket = new MulticastSocket(PORT);
         socket.joinGroup(InetAddress.getByName(GROUP_IP));
+    }
+
+    public void setQueue(BlockingQueue<byte[]> queue) {
+        this.queue = queue;
     }
 
     public byte[] readBytes() throws IOException {
@@ -40,22 +46,17 @@ public class UdpClient {
         return Finished;
     }
 
-//    public static void main(String[] args) throws IOException {
-//        int bytesCount = 44100;
-//        UdpClient udpClient = new UdpClient(bytesCount);
-//
-//        BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
-//
-//        new Thread(new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false))).start();
-//
-//        while (true) {
-//            byte[] buff = udpClient.readBytes();
-//            try {
-//                queue.put(buff);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    @Override
+    public void run() {
+
+        while (true) {
+            try {
+                queue.put(readBytes());
+                System.out.println(">");
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

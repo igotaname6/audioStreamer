@@ -1,39 +1,46 @@
 package com.codecool.audioStream;
 
+import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class ConnectionListener implements Runnable{
+@Service
+public class ConnectionListener implements Runnable {
 
-    private ConcurrentSkipListSet<SocketAddress> set;
+    private ConcurrentHashMap<InetAddress, Long> clientsMap;
 
-    private final int LISTENING_PORT = 4445;
-    private boolean running;
-    private DatagramSocket socket;
-
-    public ConnectionListener(ConcurrentSkipListSet<SocketAddress> set) {
-        this.set = set;
-
-    }
+    private final int LISTENING_PORT = 4446;
 
     @Override
     public void run() {
-        running = true;
         System.out.println("run");
         try {
-            socket = new DatagramSocket(LISTENING_PORT);
-            while (running){
+            DatagramSocket socket = new DatagramSocket(LISTENING_PORT);
+            while (true){
                 byte[] bf = new byte[1];
                 DatagramPacket packet = new DatagramPacket(bf, bf.length);
                 socket.receive(packet);
-                System.out.println(packet.getAddress().toString());
-                set.add(packet.getSocketAddress());
+                System.out.println(packet.getSocketAddress().toString());
+                clientsMap.put(packet.getAddress(), System.currentTimeMillis());
+                System.out.println(clientsMap.size());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public ConcurrentHashMap<InetAddress, Long> getClientsMap() {
+        return clientsMap;
+    }
+
+    public void setClientsMap(ConcurrentHashMap<InetAddress, Long> clientsMap) {
+        this.clientsMap = clientsMap;
     }
 }

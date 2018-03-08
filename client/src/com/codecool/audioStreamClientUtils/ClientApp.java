@@ -31,6 +31,9 @@ public class ClientApp extends Application{
     public void start(Stage primaryStage) throws Exception {
 
         controller.getView().setScene(primaryStage);
+        controller.setInput();
+        controller.setLine();
+        controller.setControls();
         controller.start();
     }
 }

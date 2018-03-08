@@ -3,29 +3,14 @@ package com.codecool.audioStreamClientUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.*;
 import java.util.concurrent.BlockingQueue;
 
 @Service
 public class Player implements Runnable {
 
-    AudioFormat format;
+    SourceDataLine source;
     BlockingQueue<byte[]> input;
-
-    public Player() {
-    }
-
-    public AudioFormat getFormat() {
-        return format;
-    }
-
-    public Player setFormat(AudioFormat format) {
-        this.format = format;
-        return this;
-    }
 
     public BlockingQueue<byte[]> getInput() {
         return input;
@@ -36,27 +21,23 @@ public class Player implements Runnable {
         return this;
     }
 
+    public SourceDataLine getSource() {
+        return source;
+    }
+
+    public void setSource(SourceDataLine source) {
+        this.source = source;
+    }
+
     @Override
     public void run() {
 
         try {
-            SourceDataLine out = AudioSystem.getSourceDataLine(format);
-            out.open(format);
-//            Line.Info info = out.getLineInfo();
-//            Arrays.stream(AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]).getSourceLines()).forEach(System.out::println);
-            out.start();
-//            Arrays.stream(out.getControls()).forEach(System.out::println);
-//            BooleanControl muter = (BooleanControl)out.getControl(BooleanControl.Type.MUTE);
-//            FloatControl vol = (FloatControl)out.getControl(FloatControl.Type.MASTER_GAIN);
-//            System.out.println(input.size());
-            while (out.isOpen()) {
-//                if (vol.getValue() > vol.getMinimum())
-//                    vol.setValue(vol.getValue() - 0.5f);
-                out.write(input.take(), 0, (int) format.getFrameRate());
-//                System.out.println(input.size());
+            while (source.isOpen()) {
+                source.write(input.take(), 0, (int) source.getFormat().getFrameRate());
             }
 
-        } catch (LineUnavailableException | InterruptedException e ) {
+        } catch (InterruptedException e ) {
             e.printStackTrace();
         }
 

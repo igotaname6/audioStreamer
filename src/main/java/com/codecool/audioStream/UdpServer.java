@@ -1,6 +1,7 @@
 package com.codecool.audioStream;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -8,58 +9,52 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.time.LocalDateTime;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
-@Controller
-public class UdpServer {
-    private final String BROADCAST_IP = "192.168.10.247";
+@Service
+public class UdpServer implements Runnable {
 
-    private final int PORT = 4446;
-    private final DatagramSocket socket;
-    private InputStream in;
+    private final int PORT = 4447;
+    private BlockingQueue<byte[]> queue;
+    private ConcurrentHashMap<InetAddress, Long> clientsConnected;
 
-    public UdpServer(InputStream file) throws IOException {
-        this.in = file;
-        this.socket = new DatagramSocket(4445);
-    }
 
-    public UdpServer() throws IOException {
-        this.socket = new DatagramSocket(4445);
-    }
+    @Override
+    public void run() {
+        new AudioFormat(44100f, 16, 2, true, false);
 
-    public void start() throws IOException, LineUnavailableException {
+        try (DatagramSocket socket = new DatagramSocket(PORT)) {
 
-        AudioFormat af = new AudioFormat(44100f, 16, 2, true, false);
+            while(true) {
 
-        SourceDataLine sp = AudioSystem.getSourceDataLine(af);
-        sp.open();
-        sp.start();
-        ((BooleanControl) sp.getControl(BooleanControl.Type.MUTE)).setValue(true);
+                final byte[] buffer = queue.take();
 
-        byte[] buffer = new byte[44100];
-
-        while(in.read(buffer, 0, 44100) != -1) {
-
-            try {
-                sp.write(buffer.clone(), 0, 44100);
-                InetAddress groupAddress = InetAddress.getByName(BROADCAST_IP);
-                DatagramPacket packet = new DatagramPacket(buffer.clone(),  buffer.length, groupAddress, PORT);
-                socket.send(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
+                clientsConnected.forEach((ip, timestamp) -> {
+                    try {
+                        if ((System.currentTimeMillis() - timestamp > 60000)) {
+                            clientsConnected.remove(ip);
+                        } else {
+                            socket.send(new DatagramPacket(buffer,0, buffer.length, ip, PORT));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
-        socket.close();
     }
 
-    public void setIn(InputStream in) {
-        this.in = in;
+    public void setQueue(BlockingQueue<byte[]> queue) { this.queue = queue; }
+
+    public ConcurrentHashMap<InetAddress, Long> getClientsConnected() {
+        return clientsConnected;
     }
 
-    public static void main(String[] args) throws IOException, LineUnavailableException {
-        while (true) {
-            String path = "resources/sample.wav";
-            UdpServer udpServer = new UdpServer(new FileInputStream(new File(path)));
-            udpServer.start();
-        }
+    public void setClientsConnected(ConcurrentHashMap<InetAddress, Long> clientsConnected) {
+        this.clientsConnected = clientsConnected;
     }
 }

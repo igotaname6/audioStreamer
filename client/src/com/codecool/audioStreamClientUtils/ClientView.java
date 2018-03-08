@@ -1,11 +1,14 @@
 package com.codecool.audioStreamClientUtils;
 
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 
 @Service
@@ -19,24 +22,29 @@ public class ClientView {
         return stage;
     }
 
-    public void setScene(Stage stage) {
-        setPlayButton();
-        setVolSlider();
+    public void setScene(Stage stage) throws IOException {
+
+        Pane root = FXMLLoader.load(getClass().getResource("/playerWindow.fxml"));
+
+        stage.setScene(new Scene(root));
+
         stage.setTitle("AudioStream Player");
+
+        System.out.println(root.getChildren());
+
+        playButton = (Button) root.getChildren().get(0);
+        setPlayButton();
+        volSlider = (Slider) root.getChildren().get(1);
+        setVolSlider();
+        stage.show();
         this.stage = stage;
-        StackPane root = new StackPane();
-        root.getChildren().add(playButton);
-        root.getChildren().add(volSlider);
-//        stage.setScene(new Scene());
     }
 
     private void setPlayButton() {
-        playButton = new Button(">");
-
+        playButton.setText(">");
     }
 
     private void setVolSlider() {
-        volSlider = new Slider();
         volSlider.setMin(0);
         volSlider.setMax(100);
         volSlider.setBlockIncrement(10);
@@ -47,7 +55,11 @@ public class ClientView {
         volSlider.setShowTickMarks(true);
     }
 
-    public void show() {
-        stage.show();
+    public Button getPlayButton() {
+        return playButton;
+    }
+
+    public Slider getVolSlider() {
+        return volSlider;
     }
 }
