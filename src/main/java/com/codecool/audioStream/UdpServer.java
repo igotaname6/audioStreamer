@@ -11,7 +11,7 @@ import java.net.*;
 
 @Controller
 public class UdpServer {
-    private final String GROUP_IP = "192.168.10.247";
+    private final String BROADCAST_IP = "192.168.10.247";
 
     private final int PORT = 4446;
     private final DatagramSocket socket;
@@ -41,7 +41,7 @@ public class UdpServer {
 
             try {
                 sp.write(buffer.clone(), 0, 44100);
-                InetAddress groupAddress = InetAddress.getByName(GROUP_IP);
+                InetAddress groupAddress = InetAddress.getByName(BROADCAST_IP);
                 DatagramPacket packet = new DatagramPacket(buffer.clone(),  buffer.length, groupAddress, PORT);
                 socket.send(packet);
             } catch (IOException e) {
