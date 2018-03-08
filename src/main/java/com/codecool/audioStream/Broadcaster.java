@@ -2,6 +2,7 @@ package com.codecool.audioStream;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Broadcaster implements Runnable{
 
@@ -21,9 +22,25 @@ public class Broadcaster implements Runnable{
                 InetAddress broadcastingIp = InetAddress.getByName(BROADCAST_IP);
                 DatagramPacket packet = new DatagramPacket(bt, bt.length, broadcastingIp, BROADCAST_PORT);
                 socket.send(packet);
+                System.out.println("send");
+                try {
+                    Thread.sleep(1000 * 3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        Broadcaster broadcaster = new Broadcaster();
+        new Thread(broadcaster).start();
+
+        ConcurrentSkipListSet<SocketAddress> set = new ConcurrentSkipListSet<>();
+        ConnectionListener listener = new ConnectionListener(set);
+
+        new Thread(listener).start();
     }
 }
