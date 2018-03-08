@@ -8,30 +8,31 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
 
 @Configuration
 @ComponentScan("com.codecool.audioStreamClientUtils")
-public class ClientApp {
+public class ClientApp extends Application{
+
+    static PlayerController controller;
 
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context =
             new AnnotationConfigApplicationContext("com.codecool.audioStreamClientUtils");
         context.scan("com.codecool.audioStreamClientClientUtils");
 
-        PlayerController playerController = context.getBean(PlayerController.class);
-        try {
-            playerController.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        launch(args);
+        controller = context.getBean(PlayerController.class);
+        launch(args);
     }
-//
-//    @Override
-//    public void start(Stage primaryStage) throws Exception {
-//        primaryStage.setScene(new Scene());
-//        primaryStage.show();
-//    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+
+        controller.getView().setScene(primaryStage);
+        controller.start();
+    }
 }
+
+

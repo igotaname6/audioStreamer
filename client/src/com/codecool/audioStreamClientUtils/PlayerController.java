@@ -1,6 +1,5 @@
 package com.codecool.audioStreamClientUtils;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -18,16 +17,15 @@ public class PlayerController {
     private BlockingQueue<byte[]> queue;
 
     @Autowired
-    public PlayerController(Player player, UdpClient client) {
+    public PlayerController(Player player, UdpClient client, ClientView view) {
+        this.view = view;
         this.player = player;
         this.client = client;
         this.queue = new LinkedBlockingQueue<>();
     }
 
-    public PlayerController() {
-    }
-
     public void start() throws IOException {
+        view.show();
         int bytesCount = 44100;
 
         this.player.setInput(this.queue).setFormat(new AudioFormat(44100f, 16, 2, true, false));
