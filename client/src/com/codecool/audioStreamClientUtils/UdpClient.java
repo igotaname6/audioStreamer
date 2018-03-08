@@ -1,16 +1,19 @@
 package com.codecool.audioStreamClientUtils;
 
+import javafx.application.Application;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.AudioFormat;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@Controller
+@Service
 public class UdpClient {
 
     private final String GROUP_IP = "230.0.0.1";
@@ -19,8 +22,9 @@ public class UdpClient {
     private boolean Finished;
     private final int bytesCount;
 
-    public UdpClient(int bytesCount) throws IOException {
-        this.bytesCount = bytesCount;
+
+    public UdpClient() throws IOException {
+        this.bytesCount = 44100;
         socket = new MulticastSocket(PORT);
         socket.joinGroup(InetAddress.getByName(GROUP_IP));
     }
@@ -36,22 +40,22 @@ public class UdpClient {
         return Finished;
     }
 
-    public static void main(String[] args) throws IOException {
-        int bytesCount = 44100;
-        UdpClient udpClient = new UdpClient(bytesCount);
-
-        BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
-
-        new Thread(new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false))).start();
-
-        while (true) {
-            byte[] buff = udpClient.readBytes();
-            try {
-                queue.put(buff);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public static void main(String[] args) throws IOException {
+//        int bytesCount = 44100;
+//        UdpClient udpClient = new UdpClient(bytesCount);
+//
+//        BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
+//
+//        new Thread(new Player().setInput(queue).setFormat(new AudioFormat(44100f, 16, 2, true, false))).start();
+//
+//        while (true) {
+//            byte[] buff = udpClient.readBytes();
+//            try {
+//                queue.put(buff);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
 }

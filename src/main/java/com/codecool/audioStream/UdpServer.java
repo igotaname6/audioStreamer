@@ -11,7 +11,7 @@ import java.net.*;
 
 @Controller
 public class UdpServer {
-    private final String GROUP_IP = "192.168.1.6";
+    private final String GROUP_IP = "192.168.10.247";
 
     private final int PORT = 4446;
     private final DatagramSocket socket;
