@@ -1,6 +1,5 @@
 package com.codecool.audioStreamClientUtils;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;

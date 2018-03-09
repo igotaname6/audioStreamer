@@ -1,18 +1,12 @@
 package com.codecool.audioStreamClientUtils;
 
-import javafx.application.Application;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.AudioFormat;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.UnknownHostException;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 public class UdpClient implements Runnable {
