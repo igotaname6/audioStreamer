@@ -83,10 +83,13 @@ public class PlayerController {
                                                     view.getPlayButton().setText(mute.getValue() ? ">" : "||"); });
 
         FloatControl volume = (FloatControl) source.getControl(FloatControl.Type.MASTER_GAIN);
+
         float slideUnit = (volume.getMaximum() - volume.getMinimum()) / 100;
 
         view.getVolSlider().setValue(volume.getValue() / slideUnit);
-        view.getVolSlider().valueProperty().addListener((observable, oldValue, newValue) -> volume.setValue(newValue.floatValue()));
+        view.getVolSlider().valueProperty().addListener((observable, oldValue, newValue) -> {
+            volume.setValue(volume.getMinimum() + newValue.floatValue() * slideUnit);}
+            );
     }
 
     public void setInput() {
