@@ -1,7 +1,7 @@
 com/codecool/audioStream/ConnectionListener.class
 com/codecool/audioStream/Streamer.class
 com/codecool/audioStream/Broadcaster.class
-com/codecool/audioStream/ServerController.class
 com/codecool/audioStream/UdpServer.class
+com/codecool/audioStream/ServerController.class
 com/codecool/audioStream/ServerApp.class
 com/codecool/audioStream/FilePlayer.class

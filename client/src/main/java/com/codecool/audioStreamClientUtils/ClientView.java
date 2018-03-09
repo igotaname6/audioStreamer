@@ -41,7 +41,7 @@ public class ClientView {
     }
 
     private void setPlayButton() {
-        playButton.setText(">");
+        playButton.setText("||");
     }
 
     private void setVolSlider() {
