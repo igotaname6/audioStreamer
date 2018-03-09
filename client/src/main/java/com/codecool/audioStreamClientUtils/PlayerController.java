@@ -5,9 +5,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 @Controller
 public class PlayerController {
@@ -22,7 +20,7 @@ public class PlayerController {
     private final AudioFormat FORMAT = new AudioFormat(44100f, 16, 2, true, false);
 
     @Autowired
-    public PlayerController(Player player, UdpClient client, ClientView view, Registrator registrator) throws LineUnavailableException {
+    public PlayerController(Player player, UdpClient client, ClientView view, Registrator registrator) {
         this.registrator = registrator;
         this.view = view;
         this.player = player;
@@ -30,10 +28,12 @@ public class PlayerController {
     }
 
 
-    public void start() throws IOException {
-        new Thread(registrator).start();
-        new Thread(client).start();
-        new Thread(player).start();
+    public void start() {
+        Executor executor = Executors.newCachedThreadPool();
+
+        executor.execute(registrator);
+        executor.execute(client);
+        executor.execute(player);
     }
 
     public Player getPlayer() {

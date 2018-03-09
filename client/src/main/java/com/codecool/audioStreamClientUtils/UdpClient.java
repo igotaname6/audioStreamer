@@ -9,7 +9,6 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class UdpClient implements Runnable {
 
-//    private final String GROUP_IP = "230.0.0.1";
     private final int PORT = 4447;
     private final DatagramSocket socket;
     private boolean Finished;

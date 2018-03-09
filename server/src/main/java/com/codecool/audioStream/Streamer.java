@@ -8,8 +8,8 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class Streamer implements Runnable {
 
-    BlockingQueue<byte[]> queue;
-    TargetDataLine target;
+    private BlockingQueue<byte[]> queue;
+    private TargetDataLine target;
 
     @Override
     public void run() {
