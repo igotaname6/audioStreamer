@@ -7,6 +7,7 @@ import javax.sound.sampled.*;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Controller
 public class PlayerController {
@@ -30,7 +31,6 @@ public class PlayerController {
 
 
     public void start() throws IOException {
-
         new Thread(registrator).start();
         new Thread(client).start();
         new Thread(player).start();

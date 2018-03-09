@@ -25,7 +25,7 @@ public class UdpServer implements Runnable {
     public void run() {
         new AudioFormat(44100f, 16, 2, true, false);
 
-        try (DatagramSocket socket = new DatagramSocket(PORT)) {
+        try (DatagramSocket socket = new DatagramSocket()) {
 
             while(true) {
 
