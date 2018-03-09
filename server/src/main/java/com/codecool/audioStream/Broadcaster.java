@@ -21,7 +21,6 @@ public class Broadcaster implements Runnable {
                 InetAddress broadcastingIp = InetAddress.getByName(BROADCAST_IP);
                 DatagramPacket packet = new DatagramPacket(bt, bt.length, broadcastingIp, BROADCAST_PORT);
                 socket.send(packet);
-                System.out.println("send");
                 try {
                     Thread.sleep(1000 * 3);
                 } catch (InterruptedException e) {

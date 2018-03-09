@@ -27,9 +27,7 @@ public class ConnectionListener implements Runnable {
                 byte[] bf = new byte[1];
                 DatagramPacket packet = new DatagramPacket(bf, bf.length);
                 socket.receive(packet);
-                System.out.println(packet.getSocketAddress().toString());
                 clientsMap.put(packet.getAddress(), System.currentTimeMillis());
-                System.out.println(clientsMap.size());
             }
         } catch (IOException e) {
             e.printStackTrace();

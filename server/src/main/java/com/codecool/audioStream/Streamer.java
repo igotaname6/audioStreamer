@@ -6,7 +6,7 @@ import javax.sound.sampled.*;
 import java.util.concurrent.BlockingQueue;
 
 @Service
-public class Streamer implements Runnable {
+public class Streamer implements StreamerInterface {
 
     private BlockingQueue<byte[]> queue;
     private TargetDataLine target;
@@ -25,14 +25,12 @@ public class Streamer implements Runnable {
         byte[] buffer = new byte[(int) target.getFormat().getFrameRate()];
 
         while (target.isOpen()) {
-            System.out.println("line opened");
             target.read(buffer, 0, buffer.length);
-            System.out.println(buffer[0]);
             try {
 //                so.write(buffer, 0, buffer.length);
                 queue.put(buffer.clone());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                break;
             }
         }
     }
@@ -41,6 +39,7 @@ public class Streamer implements Runnable {
         return queue;
     }
 
+    @Override
     public void setQueue(BlockingQueue<byte[]> queue) {
         this.queue = queue;
     }
@@ -49,6 +48,7 @@ public class Streamer implements Runnable {
         return target;
     }
 
+    @Override
     public void setTarget(TargetDataLine target) {
         this.target = target;
     }
