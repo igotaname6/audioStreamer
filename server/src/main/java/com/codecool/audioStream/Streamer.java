@@ -1,6 +1,5 @@
 package com.codecool.audioStream;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
@@ -9,8 +8,8 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class Streamer implements Runnable {
 
-    BlockingQueue<byte[]> queue;
-    TargetDataLine target;
+    private BlockingQueue<byte[]> queue;
+    private TargetDataLine target;
 
     @Override
     public void run() {

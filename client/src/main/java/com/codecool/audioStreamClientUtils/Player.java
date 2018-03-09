@@ -8,8 +8,8 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class Player implements Runnable {
 
-    SourceDataLine source;
-    BlockingQueue<byte[]> input;
+    private SourceDataLine source;
+    private BlockingQueue<byte[]> input;
 
     public BlockingQueue<byte[]> getInput() {
         return input;

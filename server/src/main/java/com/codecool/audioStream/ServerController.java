@@ -7,22 +7,20 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 @Controller
 public class ServerController {
 
-    ConcurrentHashMap<InetAddress, Long> clientsConnected;
-    Broadcaster broadcaster;
-    ConnectionListener connectionListener;
-    UdpServer udpServer;
-    Streamer streamer;
-    FilePlayer filePlayer;
-    BlockingQueue<byte[]> output;
-    TargetDataLine target;
-    SourceDataLine source;
+    private ConcurrentHashMap<InetAddress, Long> clientsConnected;
+    private Broadcaster broadcaster;
+    private ConnectionListener connectionListener;
+    private UdpServer udpServer;
+    private Streamer streamer;
+    private BlockingQueue<byte[]> output;
+    private TargetDataLine target;
+    private FilePlayer filePlayer;
+    private SourceDataLine source;
 
     private final AudioFormat FORMAT = new AudioFormat(44100f, 16, 2, true, false);
 
@@ -35,10 +33,13 @@ public class ServerController {
     }
 
     public void start() {
-        new Thread(broadcaster).start();
-        new Thread(connectionListener).start();
-        new Thread(udpServer).start();
-        new Thread(streamer).start();
+
+        Executor executor = Executors.newFixedThreadPool(4);
+        executor.execute(broadcaster);
+        executor.execute(connectionListener);
+        executor.execute(udpServer);
+        executor.execute(streamer);
+
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
@@ -55,7 +56,6 @@ public class ServerController {
         } catch (LineUnavailableException e) {
             e.printStackTrace();
         }
-
     }
 
     public void setClientsMap () {

@@ -7,5 +7,7 @@
 *.iml
 out
 gen
+
 /server/target
 /client/target
+

@@ -12,7 +12,6 @@ public class Registrator implements Runnable {
 
     private final int LISTENING_PORT  = 4445;
     private final int REGISTER_PORT = 4446;
-    private final String BROADCASTING_IP = "192.168.11.255";
 
     private void register(DatagramSocket socket) throws IOException {
 
