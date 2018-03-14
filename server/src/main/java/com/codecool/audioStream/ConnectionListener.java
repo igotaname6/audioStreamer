@@ -20,7 +20,6 @@ public class ConnectionListener implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("run");
         try {
             DatagramSocket socket = new DatagramSocket(LISTENING_PORT);
             while (true){

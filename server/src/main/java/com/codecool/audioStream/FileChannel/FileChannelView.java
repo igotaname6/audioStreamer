@@ -1,4 +1,4 @@
-package com.codecool.audioStream;
+package com.codecool.audioStream.FileChannel;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 @Service
 public class FileChannelView {
@@ -121,4 +123,5 @@ public class FileChannelView {
     public void showWindow() {
         this.stage.show();
     }
+
 }

@@ -99,4 +99,8 @@ public class MicChannelView {
     public void setPressedFldbckButton() {
         fldbck.setStyle("-fx-background-color: forestgreen");
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }

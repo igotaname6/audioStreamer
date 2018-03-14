@@ -11,8 +11,6 @@ public interface Channel extends Runnable {
     void setQueue(BlockingQueue<byte[]> queue);
     BlockingQueue<byte[]> getQueue();
 
-    void setSource(SourceDataLine source);
-
     float getMasterGain();
     void setMasterGain(float masterGain);
 
@@ -23,4 +21,11 @@ public interface Channel extends Runnable {
     void setFldbck(boolean fldbck);
 
     boolean isOpen();
+
+    void close();
+
+    BlockingQueue<byte[]> getFldbckQueue();
+    void setFldbckQueue(BlockingQueue<byte[]> fldbckQueue);
+
+
 }

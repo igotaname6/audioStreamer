@@ -1,10 +1,7 @@
-package com.codecool.audioStream;
+package com.codecool.audioStream.FileChannel;
 
-import javafx.beans.value.ObservableValue;
 import org.springframework.stereotype.Controller;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
@@ -13,15 +10,17 @@ import java.io.IOException;
 public class FileChannelController {
 
     FileChannelView view;
-    FilePlayer player;
+    FileChannel player;
 
-    public FileChannelController(FileChannelView view, FilePlayer player) {
+    public FileChannelController(FileChannelView view, FileChannel player) {
         this.view = view;
         this.player = player;
     }
 
     public void start() throws IOException {
         view.setStage();
+        view.getStage().setOnCloseRequest(event -> player.close());
+
         player.setMasterGain(0);
 
         offAir();
@@ -76,20 +75,14 @@ public class FileChannelController {
     public void setFileStream(File file) {
         try {
             view.stage.setTitle(file.getName());
-            AudioInputStream stream = AudioSystem.getAudioInputStream(file);
-            player.setFileStream(stream);
+
+            player.setFileStream(file);
             System.out.println(player.getFileStream());
-            view.getBar().setMax(stream.available());
+            view.getBar().setMax(file.length());
             view.getBar().setMin(0);
             view.getBar().setValue(0);
-            view.getBar().valueProperty().addListener((observable, oldValue, newValue) -> {
-                try {
-                    stream.skip(newValue.longValue() - oldValue.longValue());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-//            view.getBar().valueProperty().bind();
+            player.setProgresBar(view.getBar());
+            view.getBar().valueProperty().addListener((observable, oldValue, newValue) -> player.setPosition(newValue.longValue()));
         } catch (UnsupportedAudioFileException | IOException e) {
             e.printStackTrace();
         }

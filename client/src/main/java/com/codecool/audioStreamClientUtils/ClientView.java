@@ -44,4 +44,8 @@ public class ClientView {
     public Slider getVolSlider() {
         return volSlider;
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }

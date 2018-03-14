@@ -91,6 +91,7 @@ public class PlayerController {
         view.getVolSlider().valueProperty().addListener((observable, oldValue, newValue) -> {
             volume.setValue(newValue.floatValue());}
             );
+        view.getStage().setOnCloseRequest(event -> System.exit(0));
     }
 
     public void setInput() {

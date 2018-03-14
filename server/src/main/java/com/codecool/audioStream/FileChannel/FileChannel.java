@@ -1,44 +1,62 @@
-package com.codecool.audioStream;
+package com.codecool.audioStream.FileChannel;
 
+import com.codecool.audioStream.Channel;
+import javafx.scene.control.Slider;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 @Service
-public class FilePlayer implements Channel {
-
+public class FileChannel implements Channel {
+    
+    Slider progresBar;
     volatile BlockingQueue<byte[]> queue;
+    volatile BlockingQueue<byte[]> fldbckQueue;
     volatile boolean onAir;
     volatile boolean fldbck;
-    volatile boolean isOpened;
+    volatile boolean isOpened = true;
     volatile boolean isPlaying;
     volatile float masterGain;
-    volatile SourceDataLine source;
-    volatile AudioInputStream fileStream;
+    volatile MovableAudioStream fileStream;
+    volatile private long position;
 
     @Override
     public void run() {
 
         try  {
-            while (fileStream == null || !isPlaying) {}
-            isOpened = true;
+            byte[] silece = new byte[44100];
+            while (fileStream == null || !isPlaying) {
+                try {
+                    queue.put(silece);
+                    fldbckQueue.put(silece);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             byte[] buffer = new byte[(int)fileStream.getFormat().getFrameRate()];
             byte[] clone = new byte[buffer.length];
-            byte[] silece = new byte[buffer.length];
+            byte[] fldbckBuffer = new byte[buffer.length];
 
             while (isOpened) {
                 try {
                     if (isPlaying() && fileStream.read(buffer, 0, buffer.length) != -1) {
-                        for (int i=0; i<buffer.length; i++) {
+                        int i=0;
+                        for (; i<buffer.length; i++) {
                             clone[i] = (byte) (buffer[i] * masterGain * (onAir? 1 : 0));
+                            fldbckBuffer[i] = (byte) (buffer[i] * masterGain * (fldbck? 1 : 0));
                         }
                         queue.put(clone);
-                        //                        source.write(buffer, 0, buffer.length);
+                        fldbckQueue.put(fldbckBuffer);
+                        position += 44100;
+                        progresBar.setValue(position);
                     } else if (fileStream.available() > 0) {
                         queue.put(silece);
+                        fldbckQueue.put(silece);
                     } else {
+                        System.out.println("koniec");
                         isOpened = false;
                     }
                 } catch (InterruptedException e) {
@@ -58,11 +76,6 @@ public class FilePlayer implements Channel {
     @Override
     public BlockingQueue<byte[]> getQueue() {
         return queue;
-    }
-
-    @Override
-    public void setSource(SourceDataLine source) {
-        this.source = source;
     }
 
     public boolean isPlaying() {
@@ -86,7 +99,6 @@ public class FilePlayer implements Channel {
     @Override
     public void setFldbck(boolean fldbck) {
         this.fldbck = fldbck;
-        ((BooleanControl) source.getControl(BooleanControl.Type.MUTE)).setValue(!fldbck);
     }
 
     @Override
@@ -94,8 +106,23 @@ public class FilePlayer implements Channel {
         return isOpened;
     }
 
-    public void setFileStream(AudioInputStream fileStream) {
-        this.fileStream = fileStream;
+    @Override
+    public void close() {
+        isOpened = false;
+    }
+
+    public void setFileStream(File file) throws IOException, UnsupportedAudioFileException {
+        this.fileStream = new MovableAudioStream(file);
+    }
+
+    @Override
+    public BlockingQueue<byte[]> getFldbckQueue() {
+        return fldbckQueue;
+    }
+
+    @Override
+    public void setFldbckQueue(BlockingQueue<byte[]> fldbckQueue) {
+        this.fldbckQueue = fldbckQueue;
     }
 
     @Override
@@ -113,8 +140,21 @@ public class FilePlayer implements Channel {
         return masterGain;
     }
 
-    public AudioInputStream getFileStream() {
+    public MovableAudioStream getFileStream() {
         return fileStream;
+    }
+
+    public void setPosition(long position) {
+        try {
+            fileStream.skip(position - this.position);
+        } catch (IOException | UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        }
+        this.position = position;
+    }
+
+    public void setProgresBar(Slider progresBar) {
+        this.progresBar = progresBar;
     }
 }
 
