@@ -8,6 +8,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class FileChannelView {
     Button play;
     Slider bar;
     Slider gain;
+    Text text;
     FileChooser fileChooser;
 
     public void setStage() throws IOException {
@@ -64,6 +66,16 @@ public class FileChannelView {
                 .stream()
                 .filter(node -> node instanceof Slider)
                 .toArray()[1];
+        text = (Text) root.getChildren()
+                .stream()
+                .filter(node -> node instanceof Text)
+                .toArray()[0];
+        text.setText("No file added");
+    }
+
+    public void setFilename(String filename) {
+        this.text.setText(filename);
+        this.stage.setTitle(filename);
     }
 
     public Button getPlay() {

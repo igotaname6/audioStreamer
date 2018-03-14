@@ -74,7 +74,7 @@ public class FileChannelController {
 
     public void setFileStream(File file) {
         try {
-            view.stage.setTitle(file.getName());
+            view.setFilename(file.getName());
 
             player.setFileStream(file);
             System.out.println(player.getFileStream());
