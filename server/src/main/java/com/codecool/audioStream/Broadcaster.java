@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @Service
 public class Broadcaster implements Runnable {
 
-    private final String BROADCAST_IP = "192.168.11.255";
+    private final String BROADCAST_IP = "10.10.1.255";
     private final int BROADCAST_PORT = 4445;
 
     @Override

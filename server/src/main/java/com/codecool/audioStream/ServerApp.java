@@ -32,8 +32,9 @@ public class ServerApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         controller.setClientsMap();
-        controller.setOutput();
-        controller.setLine();
+        controller.setMixer();
         controller.start();
+        controller.setWindow(primaryStage);
+        controller.setMicChannel();
     }
 }

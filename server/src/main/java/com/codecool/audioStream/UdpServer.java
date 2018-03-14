@@ -20,14 +20,12 @@ public class UdpServer implements Runnable {
 
     @Override
     public void run() {
-        new AudioFormat(44100f, 16, 2, true, false);
 
         try (DatagramSocket socket = new DatagramSocket()) {
 
             while(true) {
 
                 final byte[] buffer = queue.take();
-
                 clientsConnected.forEach((ip, timestamp) -> {
                     try {
                         if ((System.currentTimeMillis() - timestamp > 60000)) {

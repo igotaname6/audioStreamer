@@ -84,11 +84,12 @@ public class PlayerController {
 
         FloatControl volume = (FloatControl) source.getControl(FloatControl.Type.MASTER_GAIN);
 
-        float slideUnit = (volume.getMaximum() - volume.getMinimum()) / 100;
+        view.getVolSlider().setMin(volume.getMinimum());
+        view.getVolSlider().setMax(volume.getMaximum());
 
-        view.getVolSlider().setValue(volume.getValue() / slideUnit);
+        view.getVolSlider().setValue(volume.getValue());
         view.getVolSlider().valueProperty().addListener((observable, oldValue, newValue) -> {
-            volume.setValue(volume.getMinimum() + newValue.floatValue() * slideUnit);}
+            volume.setValue(newValue.floatValue());}
             );
     }
 

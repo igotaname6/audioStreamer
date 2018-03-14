@@ -1,63 +1,52 @@
 package com.codecool.audioStream;
 
+import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import javax.sound.sampled.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.*;
 
 @Controller
 public class ServerController {
 
-    private ConcurrentHashMap<InetAddress, Long> clientsConnected;
+    private QueueMixer mixer;
     private Broadcaster broadcaster;
     private ConnectionListener connectionListener;
     private UdpServer udpServer;
-    private FilePlayer player;
-    private Streamer streamer;
+    private MicChannelView view;
+    private MicChannel micChannel;
+
     private BlockingQueue<byte[]> output;
     private TargetDataLine target;
-    private FilePlayer filePlayer;
     private SourceDataLine source;
-    private Mixer mixer;
+    private ConcurrentHashMap<InetAddress, Long> clientsConnected;
 
     private final AudioFormat FORMAT = new AudioFormat(44100f, 16, 2, true, false);
 
     @Autowired
-    public ServerController(FilePlayer filePlayer, Broadcaster broadcaster, ConnectionListener connectionListener, UdpServer udpServer, Streamer streamer) {
+    public ServerController(QueueMixer mixer, Broadcaster broadcaster,
+                            ConnectionListener connectionListener, UdpServer udpServer,
+                            MicChannelView view, MicChannel micChannel) {
         this.broadcaster = broadcaster;
         this.connectionListener = connectionListener;
         this.udpServer = udpServer;
-        this.streamer = streamer;
-        this.filePlayer = filePlayer;
+        this.mixer = mixer;
+        this.view = view;
+        this.micChannel = micChannel;
     }
 
     public void start() {
 
-        Executor executor = Executors.newFixedThreadPool(4);
+        Executor executor = Executors.newFixedThreadPool(5);
         executor.execute(broadcaster);
         executor.execute(connectionListener);
+        executor.execute(mixer);
         executor.execute(udpServer);
-
-        Scanner input = new Scanner(System.in);
-
-        while (true) {
-            switch (input.nextLine()) {
-                case "file":
-                    executor.execute(filePlayer);
-                    break;
-                case "mic":
-                    executor.execute(streamer);
-                    break;
-                default:
-                    System.out.println("wrong input");
-                    break;
-            }
-        }
     }
 
     public void setClientsMap () {
@@ -66,19 +55,103 @@ public class ServerController {
         udpServer.setClientsConnected(clientsConnected);
     }
 
-    public void setOutput () {
+    public void setMixer () throws LineUnavailableException {
         output = new LinkedBlockingQueue<>();
-        streamer.setQueue(output);
-        filePlayer.setQueue(output);
+        mixer.setOutput(output);
         udpServer.setQueue(output);
+        setMicLine();
+        setFoldback();
     }
 
-    public void setLine() throws LineUnavailableException {
+    public void setMicLine() throws LineUnavailableException{
         target = AudioSystem.getTargetDataLine(FORMAT);
-        streamer.setTarget(target);
-        filePlayer.setTarget(target);
         target.open();
         target.start();
     }
+
+    public void setMicChannel()  {
+        micChannel.setTarget(target);
+        micChannel.setSource(source);
+        micChannel.setQueue(new LinkedBlockingQueue<>());
+        mixer.addChannel(micChannel);
+        MicChannelController controller = new MicChannelController(view, micChannel);
+        controller.start();
+
+    }
+
+    public void setWindow(Stage stage) throws IOException {
+        view.setStage(stage);
+    }
+
+    public void setFoldback() throws LineUnavailableException {
+        source = AudioSystem.getSourceDataLine(FORMAT);
+        source.open();
+        source.start();
+    }
+
+    public void addFileChannel() {
+        FilePlayer player = new FilePlayer();
+        FileChannelController channelController = new FileChannelController(new FileChannelView(), player);
+        player.setSource(source);
+        player.setQueue(new LinkedBlockingQueue<>(3));
+        mixer.addChannel(player);
+        try {
+            channelController.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class MicChannelController {
+
+        private MicChannelView view;
+        private MicChannel channel;
+
+        public MicChannelController(MicChannelView view, MicChannel micChannel) {
+            this.view = view;
+            this.channel = micChannel;
+        }
+
+        public void start() {
+            channel.setMasterGain(0);
+
+            offAir();
+            offFldbck();
+
+            view.getOnAir().setOnAction(event -> {if (channel.isOnAir()) offAir(); else onAir();});
+            view.getFldbck().setOnAction(event -> {if (channel.isFldbck()) offFldbck(); else onFldbck();});
+
+            view.getAddChannel().setOnAction(event -> addFileChannel());
+
+            view.getGain().setMin(0);
+            view.getGain().setMax(1);
+            view.getGain().setValue(channel.getMasterGain());
+            view.getGain().valueProperty().addListener((observable, oldValue, newValue) -> channel.setMasterGain(newValue.floatValue()));
+            view.showWindow();
+            new Thread(channel).start();
+        }
+
+        public void onAir() {
+            channel.setOnAir(true);
+            view.setPressedOnAirButton();
+        }
+
+        public void offAir() {
+            channel.setOnAir(false);
+            view.setReleasedOnAirButton();
+        }
+
+        public void onFldbck() {
+            channel.setFldbck(true);
+            view.setPressedFldbckButton();
+        }
+
+        public void offFldbck() {
+            channel.setFldbck(false);
+            view.setReleasedFldbckButton();
+        }
+    }
+
+
 
 }

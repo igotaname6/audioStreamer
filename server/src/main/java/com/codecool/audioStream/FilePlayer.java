@@ -3,16 +3,52 @@ package com.codecool.audioStream;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 @Service
-public class FilePlayer implements StreamerInterface {
+public class FilePlayer implements Channel {
 
-    private BlockingQueue<byte[]> queue;
-    private TargetDataLine targetDataLine;
-    private File file = new File(getClass().getClassLoader().getResource("msJackson.wav").getFile());
+    volatile BlockingQueue<byte[]> queue;
+    volatile boolean onAir;
+    volatile boolean fldbck;
+    volatile boolean isOpened;
+    volatile boolean isPlaying;
+    volatile float masterGain;
+    volatile SourceDataLine source;
+    volatile AudioInputStream fileStream;
+
+    @Override
+    public void run() {
+
+        try  {
+            while (fileStream == null || !isPlaying) {}
+            isOpened = true;
+            byte[] buffer = new byte[(int)fileStream.getFormat().getFrameRate()];
+            byte[] clone = new byte[buffer.length];
+            byte[] silece = new byte[buffer.length];
+
+            while (isOpened) {
+                try {
+                    if (isPlaying() && fileStream.read(buffer, 0, buffer.length) != -1) {
+                        for (int i=0; i<buffer.length; i++) {
+                            clone[i] = (byte) (buffer[i] * masterGain * (onAir? 1 : 0));
+                        }
+                        queue.put(clone);
+                        //                        source.write(buffer, 0, buffer.length);
+                    } else if (fileStream.available() > 0) {
+                        queue.put(silece);
+                    } else {
+                        isOpened = false;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void setQueue(BlockingQueue<byte[]> queue) {
@@ -20,42 +56,65 @@ public class FilePlayer implements StreamerInterface {
     }
 
     @Override
-    public void setTarget(TargetDataLine target) {
-        this.targetDataLine = target;
-
+    public BlockingQueue<byte[]> getQueue() {
+        return queue;
     }
 
+    @Override
+    public void setSource(SourceDataLine source) {
+        this.source = source;
+    }
 
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    public void setPlaying(boolean playing) {
+        isPlaying = playing;
+    }
 
     @Override
-    public void run() {
+    public void setMasterGain(float masterGain) {
+        this.masterGain = masterGain;
+    }
 
-        SourceDataLine sdl = null;
-        try {
-            sdl = AudioSystem.getSourceDataLine(new AudioFormat(44100f, 16, 2, true, false));
-            sdl.open();
-            sdl.start();
-            ((BooleanControl)sdl.getControl(BooleanControl.Type.MUTE)).setValue(true);
+    @Override
+    public void setOnAir(boolean onAir) {
+        this.onAir = onAir;
+    }
 
-        } catch (LineUnavailableException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void setFldbck(boolean fldbck) {
+        this.fldbck = fldbck;
+        ((BooleanControl) source.getControl(BooleanControl.Type.MUTE)).setValue(!fldbck);
+    }
 
-        AudioInputStream in = null;
-        try {
-            in = AudioSystem.getAudioInputStream(file);
-            byte[] buffer = new byte[(int)in.getFormat().getFrameRate()];
-            while (in.read(buffer, 0, buffer.length) != -1) {
-                try {
-                    sdl.write(buffer.clone(), 0, buffer.length);
-                    queue.put(buffer.clone());
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        } catch (UnsupportedAudioFileException | IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public boolean isOpen() {
+        return isOpened;
+    }
+
+    public void setFileStream(AudioInputStream fileStream) {
+        this.fileStream = fileStream;
+    }
+
+    @Override
+    public boolean isOnAir() {
+        return onAir;
+    }
+
+    @Override
+    public boolean isFldbck() {
+        return fldbck;
+    }
+
+    @Override
+    public float getMasterGain() {
+        return masterGain;
+    }
+
+    public AudioInputStream getFileStream() {
+        return fileStream;
     }
 }
 

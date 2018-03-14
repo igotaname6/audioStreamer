@@ -33,7 +33,8 @@ public class Player implements Runnable {
 
         try {
             while (source.isOpen()) {
-                source.write(input.take(), 0, (int) source.getFormat().getFrameRate());
+                byte[] frame = input.take();
+                source.write(frame, 0, frame.length);
             }
 
         } catch (InterruptedException e ) {
