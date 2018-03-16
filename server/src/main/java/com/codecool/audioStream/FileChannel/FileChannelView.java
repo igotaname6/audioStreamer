@@ -14,6 +14,8 @@ import javafx.stage.Stage;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -30,6 +32,8 @@ public class FileChannelView {
     Slider gain;
     Text text;
     FileChooser fileChooser;
+    Text playTime;
+    Text elapsedTime;
 
     public void setStage() throws IOException {
 
@@ -70,12 +74,28 @@ public class FileChannelView {
                 .stream()
                 .filter(node -> node instanceof Text)
                 .toArray()[0];
+        playTime = (Text) root.getChildren()
+                .stream()
+                .filter(node -> node instanceof Text)
+                .toArray()[1];
+        elapsedTime = (Text) root.getChildren()
+                .stream()
+                .filter(node -> node instanceof Text)
+                .toArray()[2];
         text.setText("No file added");
     }
 
     public void setFilename(String filename) {
         this.text.setText(filename);
         this.stage.setTitle(filename);
+    }
+
+    public void setElapsedTime(String elapsedTime) {
+        this.elapsedTime.setText(elapsedTime);
+    }
+
+    public void setPlayTime(String playTime) {
+        this.playTime.setText(playTime);
     }
 
     public Button getPlay() {
@@ -135,5 +155,4 @@ public class FileChannelView {
     public void showWindow() {
         this.stage.show();
     }
-
 }

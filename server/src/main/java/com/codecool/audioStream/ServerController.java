@@ -1,5 +1,6 @@
 package com.codecool.audioStream;
 
+import com.codecool.audioStream.FileChannel.BiDirectionalTimer;
 import com.codecool.audioStream.FileChannel.FileChannel;
 import com.codecool.audioStream.FileChannel.FileChannelController;
 import com.codecool.audioStream.FileChannel.FileChannelView;
@@ -100,7 +101,7 @@ public class ServerController {
     }
 
     public void addFileChannel() {
-        FileChannel player = new FileChannel();
+        FileChannel player = new FileChannel(new BiDirectionalTimer());
         FileChannelController channelController = new FileChannelController(new FileChannelView(), player);
         player.setQueue(new LinkedBlockingQueue<>(1));
         player.setFldbckQueue(new LinkedBlockingQueue<>(1));

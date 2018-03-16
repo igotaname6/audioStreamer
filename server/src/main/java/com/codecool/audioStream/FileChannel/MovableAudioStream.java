@@ -11,10 +11,12 @@ public class MovableAudioStream {
 
     private final File file;
     private AudioInputStream stream;
+    float totalTime;
 
     public MovableAudioStream(File file) throws IOException, UnsupportedAudioFileException {
         this.file = file;
         this.stream = AudioSystem.getAudioInputStream(file);
+        totalTime = getElapsedTime();
     }
 
     public int read(byte[] buffer, int off, int len) throws IOException {
@@ -26,13 +28,22 @@ public class MovableAudioStream {
     }
 
     public long skip(long n) throws IOException, UnsupportedAudioFileException {
+        long pos = stream.available();
+//        if (Math.abs(n) > file.length()) {
+//            return (n > 0) ? file.length() - pos : -pos;
         if (n > 0) {
-            return stream.skip(n);
+            return (n > pos)? stream.skip(pos) : stream.skip(n);
         } else if (n < 0) {
-            long pos = stream.available();
             stream = AudioSystem.getAudioInputStream(file);
-            stream.skip(stream.available() - pos + n);
-            return n;
+            if (n < pos -file.length()) {
+                return pos - file.length();
+//            }
+//            if (pos + n < 0) {
+//                return -pos;
+            } else {
+                stream.skip(stream.available() - pos + n);
+                return n;
+            }
         } else {
             return 0;
         }
@@ -40,6 +51,18 @@ public class MovableAudioStream {
 
     public AudioFormat getFormat() {
         return stream.getFormat();
+    }
+
+    public float getElapsedTime() throws IOException {
+        return stream.available() / (getFormat().getFrameSize() * getFormat().getFrameRate());
+    }
+
+    public long getOriginalLen() {
+        return file.length();
+    }
+
+    public void close() throws IOException {
+        stream.close();
     }
 }
 

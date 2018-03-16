@@ -1,6 +1,7 @@
 package com.codecool.audioStream;
 
 import javax.sound.sampled.SourceDataLine;
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 public interface Channel extends Runnable {
@@ -22,7 +23,7 @@ public interface Channel extends Runnable {
 
     boolean isOpen();
 
-    void close();
+    void close() throws IOException;
 
     BlockingQueue<byte[]> getFldbckQueue();
     void setFldbckQueue(BlockingQueue<byte[]> fldbckQueue);

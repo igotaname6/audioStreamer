@@ -2,17 +2,21 @@ package com.codecool.audioStream.FileChannel;
 
 import com.codecool.audioStream.Channel;
 import javafx.scene.control.Slider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
 import java.util.concurrent.BlockingQueue;
 
 @Service
 public class FileChannel implements Channel {
     
-    Slider progresBar;
+    FileChannelView view;
+
+    BiDirectionalTimer timer;
     volatile BlockingQueue<byte[]> queue;
     volatile BlockingQueue<byte[]> fldbckQueue;
     volatile boolean onAir;
@@ -23,8 +27,14 @@ public class FileChannel implements Channel {
     volatile MovableAudioStream fileStream;
     volatile private long position;
 
+    @Autowired
+    public FileChannel(BiDirectionalTimer timer) {
+        this.timer = timer;
+    }
+
     @Override
     public void run() {
+
 
         try  {
             byte[] silece = new byte[44100];
@@ -39,10 +49,11 @@ public class FileChannel implements Channel {
             byte[] buffer = new byte[(int)fileStream.getFormat().getFrameRate()];
             byte[] clone = new byte[buffer.length];
             byte[] fldbckBuffer = new byte[buffer.length];
+            int move;
 
             while (isOpened) {
                 try {
-                    if (isPlaying() && fileStream.read(buffer, 0, buffer.length) != -1) {
+                    if (isPlaying() && (move = fileStream.read(buffer, 0, buffer.length)) != -1) {
                         int i=0;
                         for (; i<buffer.length; i++) {
                             clone[i] = (byte) (buffer[i] * masterGain * (onAir? 1 : 0));
@@ -50,16 +61,27 @@ public class FileChannel implements Channel {
                         }
                         queue.put(clone);
                         fldbckQueue.put(fldbckBuffer);
-                        position += 44100;
-                        progresBar.setValue(position);
+                        position += move;
+                        view.getBar().setValue(position);
+                        timer.setElapsed(fileStream.getElapsedTime());
+//                        view.setPlayTime(timer.getPlayString());
+                        view.setElapsedTime(timer.getElapsedString());
                     } else if (fileStream.available() > 0) {
                         queue.put(silece);
                         fldbckQueue.put(silece);
                     } else {
-                        System.out.println("koniec");
-                        isOpened = false;
+//                        System.out.println("koniec");
+                        System.out.println(fileStream.getElapsedTime());
+                        fileStream.skip(-fileStream.getOriginalLen()-1);
+                        System.out.println(fileStream.getElapsedTime());
+                        timer.setElapsed(fileStream.getElapsedTime());
+                        System.out.println(timer.getElapsedString());
+                        view.setElapsedTime(timer.getElapsedString());
+                        view.getBar().setValue(view.getBar().getMin());
+//                        view.changePlayButton();
+                        setPlaying(false);
                     }
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | UnsupportedAudioFileException e) {
                     e.printStackTrace();
                 }
             }
@@ -107,7 +129,8 @@ public class FileChannel implements Channel {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
+        fileStream.close();
         isOpened = false;
     }
 
@@ -147,14 +170,21 @@ public class FileChannel implements Channel {
     public void setPosition(long position) {
         try {
             fileStream.skip(position - this.position);
+            this.position = position;
+            timer.setElapsed(fileStream.getElapsedTime());
+            view.setElapsedTime(timer.getElapsedString());
+//            view.setPlayTime(timer.getPlayString());
         } catch (IOException | UnsupportedAudioFileException e) {
             e.printStackTrace();
         }
-        this.position = position;
     }
 
-    public void setProgresBar(Slider progresBar) {
-        this.progresBar = progresBar;
+    public void setView(FileChannelView view) {
+        this.view = view;
+    }
+
+    public BiDirectionalTimer getTimer() {
+        return timer;
     }
 }
 
